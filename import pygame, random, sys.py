@@ -54,10 +54,10 @@ gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
 # Set up images.
-# Replace the player image with Ronaldo's image
-playerImage = pygame.image.load('ronaldo.png')  # Update this with the path to the Ronaldo image
+playerImage = pygame.image.load('ronaldo.png')  # Ronaldo en tant que joueur
 playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png')
+baddieImage = pygame.image.load('messi.png')   # Messi en tant qu'obstacle
+gameOverImage = pygame.image.load('fuck.png')   # Image à afficher à la fin du jeu
 
 # Show the "Start" screen.
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -133,9 +133,9 @@ while True:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {'rect': pygame.Rect(random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize, baddieSize, baddieSize),
-                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                         'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                         }
+                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                        }
 
             baddies.append(newBaddie)
 
@@ -173,7 +173,7 @@ while True:
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
 
-        # Draw each baddie.
+        # Draw each baddie (Messi).
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
@@ -192,8 +192,9 @@ while True:
 
     gameOverSound.play()
 
-    drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 3) - 80, (WINDOWHEIGHT / 3) + 50)
+    # Display game over and image
+    windowSurface.fill(BACKGROUNDCOLOR)  # Clear screen for Game Over message
+    windowSurface.blit(gameOverImage, (WINDOWWIDTH / 4, WINDOWHEIGHT / 4))  # Positionner l'image
     pygame.display.update()
     waitForPlayerToPressKey()
 
