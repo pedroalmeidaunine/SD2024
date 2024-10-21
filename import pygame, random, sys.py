@@ -195,6 +195,8 @@ while True:
     # Display game over and image
     windowSurface.fill(BACKGROUNDCOLOR)  # Clear screen for Game Over message
     windowSurface.blit(gameOverImage, (WINDOWWIDTH / 4, WINDOWHEIGHT / 4))  # Positionner l'image
+    drawText("T'es une merde, recommence", font, windowSurface, (WINDOWWIDTH / 4) - 30, (WINDOWHEIGHT / 4) + 200)
+
     pygame.display.update()
     waitForPlayerToPressKey()
 
