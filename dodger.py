@@ -25,7 +25,7 @@ def waitForPlayerToPressKey():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE: # Pressing ESC quits.
                     terminate()
-                return
+                return 
 
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
