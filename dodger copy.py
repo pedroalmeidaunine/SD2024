@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 import pygame
 import random
 import sys
 import json
+=======
+import pygame, random, sys, json
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
 from pygame.locals import *
 
 # Taille de la fenêtre basée sur la taille de l'écran
@@ -98,6 +102,7 @@ def show_main_menu():
         drawText('Dodger Game', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
         drawText('Enter your name: ' + playerName, smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
         drawText('Select Difficulty:', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
+<<<<<<< HEAD
 
         # Indiquer la difficulté sélectionnée
         easy_color = (255, 0, 0) if selectedLevel == 'easy' else (0, 0, 0)
@@ -117,6 +122,10 @@ def show_main_menu():
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
         for index, (name, score) in enumerate(sorted_scores):
             drawText(f'{index + 1}. {name}: {score}', smallFont, windowSurface, (WINDOWWIDTH / 4*3), 100 + index * 30)  # Position ajustée
+=======
+        drawText('1. Easy  2. Medium  3. Hard', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 40)
+        drawText('Press Enter to start', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 80)
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
 
         pygame.display.update()
         
@@ -138,6 +147,7 @@ def show_main_menu():
                     selectedLevel = 'medium'
                 elif event.key == K_3:
                     selectedLevel = 'hard'
+<<<<<<< HEAD
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1 and playerName and selectedLevel:
                     # Vérifie si le bouton Start est cliqué
@@ -158,6 +168,26 @@ def game_loop(playerName, selectedLevel):
         ADDNEWBADDIERATE = 4
         BADDIEMAXSPEED = 9
 
+=======
+
+# Initialisation du niveau et du joueur
+playerName, selectedLevel = show_main_menu()
+topScore = scores.get(playerName, 0)
+
+# Configuration du niveau
+if selectedLevel == 'easy':
+    ADDNEWBADDIERATE = 8
+    BADDIEMAXSPEED = 5
+elif selectedLevel == 'medium':
+    ADDNEWBADDIERATE = 6
+    BADDIEMAXSPEED = 7
+else:
+    ADDNEWBADDIERATE = 4
+    BADDIEMAXSPEED = 9
+
+while True:
+    # Initialisation du jeu
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
     baddies = []
     projectiles = []
     score = 0
@@ -176,18 +206,24 @@ def game_loop(playerName, selectedLevel):
                 elif event.key in [K_RIGHT, K_d]: moveRight = True
                 elif event.key in [K_UP, K_w]: moveUp = True
                 elif event.key in [K_DOWN, K_s]: moveDown = True
+<<<<<<< HEAD
                 elif event.key == K_SPACE:  # Tirer un projectile
                     projectile = {'rect': pygame.Rect(playerRect.right, playerRect.centery - 5, 10, 5),
                                   'surface': pygame.Surface((10, 5))}
                     projectile['surface'].fill((255, 0, 0))  # Rouge
                     projectiles.append(projectile)
+=======
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
             elif event.type == KEYUP:
                 if event.key in [K_LEFT, K_a]: moveLeft = False
                 elif event.key in [K_RIGHT, K_d]: moveRight = False
                 elif event.key in [K_UP, K_w]: moveUp = False
                 elif event.key in [K_DOWN, K_s]: moveDown = False
+<<<<<<< HEAD
             elif event.type == MOUSEMOTION:
                 playerRect.center = event.pos  # Déplacer le joueur avec la souris
+=======
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
 
         # Mouvement du joueur
         if moveLeft and playerRect.left > 0:
@@ -199,11 +235,16 @@ def game_loop(playerName, selectedLevel):
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
+<<<<<<< HEAD
         # Ajouter des ennemis
+=======
+        # Ajout et mouvement des baddies
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
         baddieAddCounter += 1
         if baddieAddCounter >= ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+<<<<<<< HEAD
             newBaddie = {
                 'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
                 'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
@@ -236,6 +277,30 @@ def game_loop(playerName, selectedLevel):
         windowSurface.fill((255, 255, 255))
         windowSurface.blit(waterImage, (backgroundX, 0))
 
+=======
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                        }
+            baddies.append(newBaddie)
+
+        for b in baddies:
+            b['rect'].move_ip(-b['speed'], 0)
+            if b['rect'].right < 0:
+                baddies.remove(b)
+
+        # Mouvement du fond d'eau
+        backgroundX -= backgroundSpeed
+        if backgroundX <= -waterRect.width:
+            backgroundX = 0
+
+        # Dessin du fond, du score, du joueur, et des baddies
+        windowSurface.blit(waterImage, (backgroundX, 0))
+        windowSurface.blit(waterImage, (backgroundX + waterRect.width, 0))
+        drawText(f'Score: {score}', font, windowSurface, 10, 0)
+        drawText(f'Top Score: {topScore}', font, windowSurface, 10, 40)
+        windowSurface.blit(playerImage, playerRect)
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
@@ -246,6 +311,17 @@ def game_loop(playerName, selectedLevel):
         drawText(f'Score: {score}', smallFont, windowSurface, 10, 10)
 
         pygame.display.update()
+<<<<<<< HEAD
+=======
+
+        if playerHasHitBaddie(playerRect, baddies):
+            if score > topScore:
+                topScore = score
+                scores[playerName] = topScore
+                save_scores(scores)
+            break
+
+>>>>>>> 8ba4c367f51c480ac749651859749428b4e65ce2
         mainClock.tick(FPS)
 
 # Boucle principale de l'application
