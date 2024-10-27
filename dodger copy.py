@@ -1,4 +1,4 @@
-import pygame, random, sys
+import pygame, random, sys, json
 from pygame.locals import *
 
 # Taille de la fenêtre basée sur la taille de l'écran
@@ -15,6 +15,20 @@ BADDIEMAXSIZE = 40
 BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
+
+# Système de meilleur score
+def load_scores():
+    try:
+        with open('scores.txt', 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+def save_scores(scores):
+    with open('scores.txt', 'w') as f:
+        json.dump(scores, f)
+
+scores = load_scores()
 
 def terminate():
     pygame.quit()
@@ -50,10 +64,11 @@ pygame.mouse.set_visible(False)
 
 # Charge les ressources
 font = pygame.font.SysFont(None, 48)
+smallFont = pygame.font.SysFont(None, 36)
 
 # Load and make the player image transparent
-playerImage = pygame.image.load('player.png').convert_alpha()  # Ensure the image supports transparency
-playerImage = pygame.transform.scale(playerImage, (50, 50))  # Scale the diver to an appropriate size
+playerImage = pygame.image.load('player.png').convert_alpha()
+playerImage = pygame.transform.scale(playerImage, (50, 50))
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
@@ -63,23 +78,62 @@ waterRect = waterImage.get_rect()
 
 # Variables pour le défilement du fond
 backgroundX = 0
-backgroundSpeed = 2  # Vitesse de défilement du fond
+backgroundSpeed = 2
 
-# Affichage de l'écran de démarrage
-windowSurface.fill((255, 255, 255))
-drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3) + 50)
-pygame.display.update()
-waitForPlayerToPressKey()
+# Fonction pour le menu principal
+def show_main_menu():
+    playerName = ""
+    selectedLevel = None
+    while True:
+        windowSurface.fill((255, 255, 255))
+        drawText('Dodger Game', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
+        drawText('Enter your name: ' + playerName, smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
+        drawText('Select Difficulty:', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
+        drawText('1. Easy  2. Medium  3. Hard', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 40)
+        drawText('Press Enter to start', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 80)
 
-topScore = 0
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    terminate()
+                elif event.key == K_RETURN and playerName and selectedLevel:
+                    return playerName, selectedLevel
+                elif event.key == K_BACKSPACE:
+                    playerName = playerName[:-1]
+                elif event.unicode.isalpha():
+                    playerName += event.unicode
+                elif event.key == K_1:
+                    selectedLevel = 'easy'
+                elif event.key == K_2:
+                    selectedLevel = 'medium'
+                elif event.key == K_3:
+                    selectedLevel = 'hard'
+
+# Initialisation du niveau et du joueur
+playerName, selectedLevel = show_main_menu()
+topScore = scores.get(playerName, 0)
+
+# Configuration du niveau
+if selectedLevel == 'easy':
+    ADDNEWBADDIERATE = 8
+    BADDIEMAXSPEED = 5
+elif selectedLevel == 'medium':
+    ADDNEWBADDIERATE = 6
+    BADDIEMAXSPEED = 7
+else:
+    ADDNEWBADDIERATE = 4
+    BADDIEMAXSPEED = 9
+
 while True:
     # Initialisation du jeu
     baddies = []
     score = 0
     playerRect.topleft = (50, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
-    reverseCheat = slowCheat = False
     baddieAddCounter = 0
 
     while True:  # Boucle principale
@@ -88,52 +142,16 @@ while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
-            if event.type == KEYDOWN:
-                if event.key == K_z:
-                    reverseCheat = True
-                if event.key == K_x:
-                    slowCheat = True
-                if event.key == K_LEFT or event.key == K_a:
-                    moveRight = False
-                    moveLeft = True
-                if event.key == K_RIGHT or event.key == K_d:
-                    moveLeft = False
-                    moveRight = True
-                if event.key == K_UP or event.key == K_w:
-                    moveDown = False
-                    moveUp = True
-                if event.key == K_DOWN or event.key == K_s:
-                    moveUp = False
-                    moveDown = True
-            if event.type == KEYUP:
-                if event.key == K_z:
-                    reverseCheat = False
-                    score = 0
-                if event.key == K_x:
-                    slowCheat = False
-                    score = 0
-                if event.key == K_ESCAPE:
-                    terminate()
-
-                if event.key == K_LEFT or event.key == K_a:
-                    moveLeft = False
-                if event.key == K_RIGHT or event.key == K_d:
-                    moveRight = False
-                if event.key == K_UP or event.key == K_w:
-                    moveUp = False
-                if event.key == K_DOWN or event.key == K_s:
-                    moveDown = False
-
-        # Ajout des baddies
-        baddieAddCounter += 1
-        if baddieAddCounter == ADDNEWBADDIERATE:
-            baddieAddCounter = 0
-            baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                        }
-            baddies.append(newBaddie)
+            elif event.type == KEYDOWN:
+                if event.key in [K_LEFT, K_a]: moveLeft = True
+                elif event.key in [K_RIGHT, K_d]: moveRight = True
+                elif event.key in [K_UP, K_w]: moveUp = True
+                elif event.key in [K_DOWN, K_s]: moveDown = True
+            elif event.type == KEYUP:
+                if event.key in [K_LEFT, K_a]: moveLeft = False
+                elif event.key in [K_RIGHT, K_d]: moveRight = False
+                elif event.key in [K_UP, K_w]: moveUp = False
+                elif event.key in [K_DOWN, K_s]: moveDown = False
 
         # Mouvement du joueur
         if moveLeft and playerRect.left > 0:
@@ -145,34 +163,33 @@ while True:
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Déplacement des baddies
-        for b in baddies:
-            if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(-b['speed'], 0)
-            elif reverseCheat:
-                b['rect'].move_ip(5, 0)
-            elif slowCheat:
-                b['rect'].move_ip(-1, 0)
+        # Ajout et mouvement des baddies
+        baddieAddCounter += 1
+        if baddieAddCounter >= ADDNEWBADDIERATE:
+            baddieAddCounter = 0
+            baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                        }
+            baddies.append(newBaddie)
 
-        # Supprimer les baddies qui sortent de l'écran
-        for b in baddies[:]:
+        for b in baddies:
+            b['rect'].move_ip(-b['speed'], 0)
             if b['rect'].right < 0:
                 baddies.remove(b)
 
         # Mouvement du fond d'eau
         backgroundX -= backgroundSpeed
         if backgroundX <= -waterRect.width:
-            backgroundX = 0  # Réinitialise le fond une fois qu'il a défilé complètement
+            backgroundX = 0
 
-        # Dessine le fond d'eau
+        # Dessin du fond, du score, du joueur, et des baddies
         windowSurface.blit(waterImage, (backgroundX, 0))
-        windowSurface.blit(waterImage, (backgroundX + waterRect.width, 0))  # Deuxième image pour le défilement
-
-        # Dessine le score, le joueur, et les baddies
+        windowSurface.blit(waterImage, (backgroundX + waterRect.width, 0))
         drawText(f'Score: {score}', font, windowSurface, 10, 0)
         drawText(f'Top Score: {topScore}', font, windowSurface, 10, 40)
         windowSurface.blit(playerImage, playerRect)
-
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
@@ -181,6 +198,8 @@ while True:
         if playerHasHitBaddie(playerRect, baddies):
             if score > topScore:
                 topScore = score
+                scores[playerName] = topScore
+                save_scores(scores)
             break
 
         mainClock.tick(FPS)
