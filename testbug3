@@ -255,6 +255,6 @@ def game_loop(playerName, selectedLevel):
 
 # Main application loop
 while True:
-    play_intro_video(r"C:\Users\Prêt à démarrer\OneDrive\Documents\GitHub\SD2024\intro.mp4")
     playerName, selectedLevel = show_main_menu()
+    play_intro_video(r"C:\Users\Prêt à démarrer\OneDrive\Documents\GitHub\SD2024\intro.mp4")  # Play the video here
     game_loop(playerName, selectedLevel)
