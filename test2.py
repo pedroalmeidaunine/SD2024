@@ -4,7 +4,7 @@ import sys
 import json
 from pygame.locals import *
 
-# Taille de la fenêtre basée sur la taille de l'écran
+# Initialisation de Pygame
 pygame.init()
 infoObject = pygame.display.Info()
 WINDOWWIDTH = infoObject.current_w
@@ -36,24 +36,6 @@ scores = load_scores()
 def terminate():
     pygame.quit()
     sys.exit()
-
-def waitForPlayerToPressKey():
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                terminate()
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    terminate()
-                return
-            elif event.type == MOUSEBUTTONDOWN:  # Redémarrer avec un clic
-                return
-
-def playerHasHitBaddie(playerRect, baddies):
-    for b in baddies:
-        if playerRect.colliderect(b['rect']):
-            return True
-    return False
 
 def drawText(text, font, surface, x, y, color=TEXTCOLOR):
     textobj = font.render(text, 1, color)
@@ -119,7 +101,7 @@ def show_main_menu():
             drawText(f'{index + 1}. {name}: {score}', smallFont, windowSurface, (WINDOWWIDTH / 4 * 3), 100 + index * 30)  # Position ajustée
 
         pygame.display.update()
-        
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
@@ -130,7 +112,7 @@ def show_main_menu():
                     return playerName, selectedLevel  # Démarrer le jeu
                 elif event.key == K_BACKSPACE:
                     playerName = playerName[:-1]
-                elif event.unicode.isalpha():
+                elif event.unicode.isalpha() or event.unicode == ' ':  # Accepter les espaces aussi
                     playerName += event.unicode
                 elif event.key == K_1:
                     selectedLevel = 'easy'
@@ -140,6 +122,9 @@ def show_main_menu():
                     selectedLevel = 'hard'
             elif event.type == MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
+                # Vérifie si les paramètres sont valides, peu importe où l'utilisateur clique
+                if playerName and selectedLevel:
+                    return playerName, selectedLevel  # Démarrer le jeu
                 # Vérifie si le bouton Start est cliqué
                 if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 160 < mouse_y < WINDOWHEIGHT / 2 + 200):
                     if playerName and selectedLevel:  # Vérifie que le nom et le niveau sont valides
@@ -159,6 +144,7 @@ def game_loop(playerName, selectedLevel):
         BADDIEMAXSPEED = 9
 
     baddies = []
+    projectiles = []
     score = 0
     playerRect.topleft = (50, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
@@ -175,6 +161,11 @@ def game_loop(playerName, selectedLevel):
                 elif event.key in [K_RIGHT, K_d]: moveRight = True
                 elif event.key in [K_UP, K_w]: moveUp = True
                 elif event.key in [K_DOWN, K_s]: moveDown = True
+                elif event.key == K_SPACE:  # Tirer un projectile
+                    projectile = {'rect': pygame.Rect(playerRect.right, playerRect.centery - 5, 10, 5),
+                                  'surface': pygame.Surface((10, 5))}
+                    projectile['surface'].fill((255, 0, 0))  # Rouge
+                    projectiles.append(projectile)
             elif event.type == KEYUP:
                 if event.key in [K_LEFT, K_a]: moveLeft = False
                 elif event.key in [K_RIGHT, K_d]: moveRight = False
@@ -193,77 +184,98 @@ def game_loop(playerName, selectedLevel):
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Ajouter de nouveaux ennemis
+        # Ajouter des ennemis
         baddieAddCounter += 1
         if baddieAddCounter >= ADDNEWBADDIERATE:
+            baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             baddieSpeed = random.randint(BADDIEMINSPEED, BADDIEMAXSPEED)
             baddieRect = pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize)
             baddies.append({'rect': baddieRect, 'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)), 'speed': baddieSpeed})
-            baddieAddCounter = 0
 
-        # Mouvements des ennemis
-        for b in baddies:
+        # Mouvement des ennemis
+        for b in baddies[:]:
             b['rect'].move_ip(-b['speed'], 0)
+            if b['rect'].right < 0:  # Supprimer les ennemis qui sortent de l'écran
+                baddies.remove(b)
 
-        # Vérifier si le joueur a touché un ennemi
+        # Vérification de la collision entre le joueur et les ennemis
         if playerHasHitBaddie(playerRect, baddies):
-            break  # Quitter la boucle du jeu si le joueur touche un ennemi
+            break  # Fin de la partie si collision
 
-        # Écran d'affichage
-        windowSurface.blit(waterImage, (backgroundX, 0))  # Défilement de l'eau
-        windowSurface.blit(waterImage, (backgroundX + waterImage.get_width(), 0))  # Deuxième image pour le défilement
-        backgroundX -= backgroundSpeed
-        if backgroundX <= -waterImage.get_width():
-            backgroundX = 0  # Réinitialiser le défilement
+        # Mise à jour des projectiles
+        for p in projectiles[:]:
+            p['rect'].move_ip(10, 0)  # Déplacer les projectiles
+            if p['rect'].left > WINDOWWIDTH:  # Supprimer les projectiles qui sortent de l'écran
+                projectiles.remove(p)
 
-        # Dessiner le joueur
-        windowSurface.blit(playerImage, playerRect)
+        # Vérifier les collisions entre projectiles et ennemis
+        for p in projectiles[:]:
+            for b in baddies[:]:
+                if p['rect'].colliderect(b['rect']):
+                    projectiles.remove(p)
+                    baddies.remove(b)
+                    break  # Sortir de la boucle après une collision
 
-        # Dessiner les ennemis
+        # Dessin
+        windowSurface.fill((255, 255, 255))  # Fond blanc
+        windowSurface.blit(waterImage, (0, backgroundX))  # Fond d'eau
+        backgroundX += backgroundSpeed
+        if backgroundX >= WINDOWHEIGHT:
+            backgroundX = 0
+
+        windowSurface.blit(playerImage, playerRect.topleft)
         for b in baddies:
-            windowSurface.blit(b['surface'], b['rect'])
+            windowSurface.blit(b['surface'], b['rect'].topleft)
 
-        # Afficher le score
-        drawText(f'Score: {score}', smallFont, windowSurface, 10, 10)
+        for p in projectiles:
+            windowSurface.blit(p['surface'], p['rect'].topleft)
 
+        drawText('Score: ' + str(score), smallFont, windowSurface, 10, 10)
         pygame.display.update()
         mainClock.tick(FPS)
 
-    # Afficher les résultats après la fin du jeu
-    show_game_over_screen(playerName, score)
+    # Écran de fin de jeu
+    display_end_screen(playerName, score)
 
 # Affiche l'écran de fin de jeu
-def show_game_over_screen(playerName, score):
+def display_end_screen(playerName, score):
     global scores
-
-    # Ajout du score au tableau des scores
     if playerName in scores:
-        scores[playerName] += score
+        scores[playerName] = max(scores[playerName], score)  # Garder le meilleur score
     else:
-        scores[playerName] = score
+        scores[playerName] = score  # Ajouter un nouveau joueur
     save_scores(scores)
 
     while True:
         windowSurface.fill((255, 255, 255))
-        drawText('Game Over', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-        drawText(f'Your Score: {score}', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
-        drawText('Press Enter to play again or Escape to quit', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 50)
+        drawText('Game Over!', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
+        drawText(f'Your score: {score}', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
+
+        draw_button(windowSurface, 'Play Again', (WINDOWWIDTH / 2 - 50), (WINDOWHEIGHT / 2) + 40, 100, 40, (0, 255, 0))
+        draw_button(windowSurface, 'Main Menu', (WINDOWWIDTH / 2 - 50), (WINDOWHEIGHT / 2) + 100, 100, 40, (255, 0, 0))
 
         pygame.display.update()
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
-            if event.type == KEYDOWN:
+            elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     terminate()
-                if event.key == K_RETURN:
-                    return  # Retourner au début de la boucle du jeu
+                elif event.key == K_RETURN:  # Recommencer le jeu
+                    return
+            elif event.type == MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                # Vérifie si le bouton Play Again est cliqué
+                if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 40 < mouse_y < WINDOWHEIGHT / 2 + 80):
+                    return  # Recommencer le jeu
+                # Vérifie si le bouton Main Menu est cliqué
+                if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 100 < mouse_y < WINDOWHEIGHT / 2 + 140):
+                    return  # Retour au menu principal
 
 # Boucle principale du programme
-while True:
-    playerName, selectedLevel = show_main_menu()  # Afficher le menu principal
-    game_loop(playerName, selectedLevel)  # Démarrer le jeu
-
-
+if __name__ == '__main__':
+    while True:
+        playerName, selectedLevel = show_main_menu()  # Afficher le menu principal
+        game_loop(playerName, selectedLevel)  # Démarrer le jeu
