@@ -3,8 +3,9 @@ import random
 import sys
 import json
 from pygame.locals import *
+from moviepy.editor import VideoFileClip
 
-# Taille de la fenêtre basée sur la taille de l'écran
+# Initialize Pygame and window settings
 pygame.init()
 infoObject = pygame.display.Info()
 WINDOWWIDTH = infoObject.current_w
@@ -19,7 +20,7 @@ BADDIEMINSPEED = 1
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 
-# Système de meilleur score
+# Load and save high scores
 def load_scores():
     try:
         with open('scores.txt', 'r') as f:
@@ -37,6 +38,7 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+# Function to wait for player input
 def waitForPlayerToPressKey():
     while True:
         for event in pygame.event.get():
@@ -46,7 +48,7 @@ def waitForPlayerToPressKey():
                 if event.key == K_ESCAPE:
                     terminate()
                 return
-            elif event.type == MOUSEBUTTONDOWN:  # Redémarrer avec un clic
+            elif event.type == MOUSEBUTTONDOWN:
                 return
 
 def playerHasHitBaddie(playerRect, baddies):
@@ -55,6 +57,7 @@ def playerHasHitBaddie(playerRect, baddies):
             return True
     return False
 
+# Draw text and buttons
 def drawText(text, font, surface, x, y, color=TEXTCOLOR):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
@@ -65,31 +68,43 @@ def draw_button(surface, text, x, y, width, height, color):
     pygame.draw.rect(surface, color, (x, y, width, height))
     drawText(text, smallFont, surface, x + 10, y + 10)
 
-# Initialise pygame
+# Load resources
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Dodger Game')
 pygame.mouse.set_visible(True)
 
-# Charge les ressources
 font = pygame.font.SysFont(None, 48)
 smallFont = pygame.font.SysFont(None, 36)
 
-# Load and make the player image transparent
 playerImage = pygame.image.load('player.png').convert_alpha()
 playerImage = pygame.transform.scale(playerImage, (50, 50))
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
-# Charge et configure l'image d'eau pour le fond dynamique
 waterImage = pygame.image.load('water.png').convert()
 waterRect = waterImage.get_rect()
 
-# Variables pour le défilement du fond
 backgroundX = 0
 backgroundSpeed = 2
 
-# Fonction pour le menu principal
+# Function to play the intro video
+def play_intro_video(video_path):
+    clip = VideoFileClip(video_path)
+    clip = clip.resize((WINDOWWIDTH, WINDOWHEIGHT))  # Adjust video size to fit the Pygame window
+    
+    for frame in clip.iter_frames(fps=FPS, dtype="uint8"):
+        frame_surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+        windowSurface.blit(frame_surface, (0, 0))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+    
+    clip.close()
+
+# Main menu function
 def show_main_menu():
     playerName = ""
     selectedLevel = None
@@ -99,7 +114,6 @@ def show_main_menu():
         drawText('Enter your name: ' + playerName, smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
         drawText('Select Difficulty:', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
 
-        # Indiquer la difficulté sélectionnée
         easy_color = (255, 0, 0) if selectedLevel == 'easy' else (0, 0, 0)
         medium_color = (255, 0, 0) if selectedLevel == 'medium' else (0, 0, 0)
         hard_color = (255, 0, 0) if selectedLevel == 'hard' else (0, 0, 0)
@@ -108,11 +122,9 @@ def show_main_menu():
         drawText('2. Medium', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 80, medium_color)
         drawText('3. Hard', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 120, hard_color)
 
-        # Bouton start
         start_button_color = (0, 255, 0) if playerName and selectedLevel else (150, 150, 150)
         draw_button(windowSurface, 'Start', (WINDOWWIDTH / 2 - 50), (WINDOWHEIGHT / 2) + 160, 100, 40, start_button_color)
 
-        # Affichage du tableau des scores
         drawText('High Scores:', smallFont, windowSurface, (WINDOWWIDTH - 150), 50)
         sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
         for index, (name, score) in enumerate(sorted_scores):
@@ -140,12 +152,11 @@ def show_main_menu():
                     selectedLevel = 'hard'
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1 and playerName and selectedLevel:
-                    # Vérifie si le bouton Start est cliqué
                     mouse_x, mouse_y = event.pos
                     if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 160 < mouse_y < WINDOWHEIGHT / 2 + 200):
                         return playerName, selectedLevel
 
-# Boucle principale du jeu
+# Game loop
 def game_loop(playerName, selectedLevel):
     global ADDNEWBADDIERATE, BADDIEMAXSPEED
     if selectedLevel == 'easy':
@@ -165,7 +176,7 @@ def game_loop(playerName, selectedLevel):
     moveLeft = moveRight = moveUp = moveDown = False
     baddieAddCounter = 0
 
-    while True:  # Boucle principale
+    while True:
         score += 1
 
         for event in pygame.event.get():
@@ -176,10 +187,10 @@ def game_loop(playerName, selectedLevel):
                 elif event.key in [K_RIGHT, K_d]: moveRight = True
                 elif event.key in [K_UP, K_w]: moveUp = True
                 elif event.key in [K_DOWN, K_s]: moveDown = True
-                elif event.key == K_SPACE:  # Tirer un projectile
+                elif event.key == K_SPACE:
                     projectile = {'rect': pygame.Rect(playerRect.right, playerRect.centery - 5, 10, 5),
                                   'surface': pygame.Surface((10, 5))}
-                    projectile['surface'].fill((255, 0, 0))  # Rouge
+                    projectile['surface'].fill((255, 0, 0))
                     projectiles.append(projectile)
             elif event.type == KEYUP:
                 if event.key in [K_LEFT, K_a]: moveLeft = False
@@ -187,9 +198,8 @@ def game_loop(playerName, selectedLevel):
                 elif event.key in [K_UP, K_w]: moveUp = False
                 elif event.key in [K_DOWN, K_s]: moveDown = False
             elif event.type == MOUSEMOTION:
-                playerRect.center = event.pos  # Déplacer le joueur avec la souris
+                playerRect.center = event.pos
 
-        # Mouvement du joueur
         if moveLeft and playerRect.left > 0:
             playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
         if moveRight and playerRect.right < WINDOWWIDTH:
@@ -199,7 +209,6 @@ def game_loop(playerName, selectedLevel):
         if moveDown and playerRect.bottom < WINDOWHEIGHT:
             playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Ajout et mouvement des baddies
         baddieAddCounter += 1
         if baddieAddCounter >= ADDNEWBADDIERATE:
             baddieAddCounter = 0
@@ -216,15 +225,12 @@ def game_loop(playerName, selectedLevel):
             if b['rect'].left < 0:
                 baddies.remove(b)
 
-        # Déplacer les projectiles
         for projectile in projectiles[:]:
             projectile['rect'].move_ip(5, 0)
             if projectile['rect'].left > WINDOWWIDTH:
                 projectiles.remove(projectile)
 
-        # Vérifiez si le joueur a touché un baddie
         if playerHasHitBaddie(playerRect, baddies):
-            # Enregistrer le score si le joueur perd
             if playerName in scores:
                 scores[playerName] = max(scores[playerName], score)
             else:
@@ -232,7 +238,6 @@ def game_loop(playerName, selectedLevel):
             save_scores(scores)
             return
 
-        # Affichage
         windowSurface.fill((255, 255, 255))
         windowSurface.blit(waterImage, (backgroundX, 0))
 
@@ -248,7 +253,8 @@ def game_loop(playerName, selectedLevel):
         pygame.display.update()
         mainClock.tick(FPS)
 
-# Boucle principale de l'application
+# Main application loop
 while True:
+    play_intro_video(r"C:\Users\Prêt à démarrer\OneDrive\Documents\GitHub\SD2024\intro.mp4")
     playerName, selectedLevel = show_main_menu()
     game_loop(playerName, selectedLevel)
