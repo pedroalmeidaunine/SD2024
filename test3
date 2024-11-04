@@ -184,119 +184,125 @@ def show_main_menu():
                     if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 160 < mouse_y < WINDOWHEIGHT / 2 + 200):
                         return playerName, selectedLevel
 
-# Game over menu function
-def show_game_over_menu(score):
+# Game loop
+def game_loop(playerName, selectedLevel):
+    global ADDNEWBADDIERATE, BADDIEMAXSPEED
+    if selectedLevel == 'easy':
+        ADDNEWBADDIERATE = 8
+        BADDIEMAXSPEED = 5
+    elif selectedLevel == 'medium':
+        ADDNEWBADDIERATE = 6
+        BADDIEMAXSPEED = 7
+    else:
+        ADDNEWBADDIERATE = 4
+        BADDIEMAXSPEED = 9
+
+    baddies = []
+    projectiles = []
+    explosions = []  # Store explosions
+    score = 0
+    playerRect.topleft = (50, WINDOWHEIGHT / 2)
+    moveLeft = moveRight = moveUp = moveDown = False
+    baddieAddCounter = 0
+
     while True:
-        windowSurface.fill((255, 255, 255))
-        drawText('Game Over', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
-        drawText(f'Your Score: {score}', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-
-        draw_button(windowSurface, 'Back to Menu', (WINDOWWIDTH / 2 - 100), (WINDOWHEIGHT / 2), 200, 50, (0, 255, 0))
-        draw_button(windowSurface, 'Play Again', (WINDOWWIDTH / 2 - 100), (WINDOWHEIGHT / 2 + 60), 200, 50, (0, 255, 0))
-
-        drawText('High Scores:', smallFont, windowSurface, (WINDOWWIDTH / 4 * 3), 50)
-        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
-        for index, (name, score) in enumerate(sorted_scores):
-            drawText(f'{index + 1}. {name}: {score}', smallFont, windowSurface, (WINDOWWIDTH / 4 * 3), 100 + index * 30)
-
-        pygame.display.update()
+        score += 1
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
             elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    terminate()
-                elif event.key == K_RETURN:
-                    return 'menu'  # Go back to the main menu
-            elif event.type == MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    mouse_x, mouse_y = event.pos
-                    if (WINDOWWIDTH / 2 - 100 < mouse_x < WINDOWWIDTH / 2 + 100) and (WINDOWHEIGHT / 2 < mouse_y < WINDOWHEIGHT / 2 + 50):
-                        return 'menu'  # Back to the main menu
-                    elif (WINDOWWIDTH / 2 - 100 < mouse_x < WINDOWWIDTH / 2 + 100) and (WINDOWHEIGHT / 2 + 60 < mouse_y < WINDOWHEIGHT / 2 + 110):
-                        return 'play_again'  # Play again
+                if event.key in [K_LEFT, K_a]: moveLeft = True
+                elif event.key in [K_RIGHT, K_d]: moveRight = True
+                elif event.key in [K_UP, K_w]: moveUp = True
+                elif event.key in [K_DOWN, K_s]: moveDown = True
+                elif event.key == K_SPACE:
+                    projectile = {'rect': pygame.Rect(playerRect.right, playerRect.centery - 5, 10, 5),
+                                  'surface': pygame.Surface((10, 5))}
+                    projectile['surface'].fill((255, 0, 0))
+                    projectiles.append(projectile)
+            elif event.type == KEYUP:
+                if event.key in [K_LEFT, K_a]: moveLeft = False
+                elif event.key in [K_RIGHT, K_d]: moveRight = False
+                elif event.key in [K_UP, K_w]: moveUp = False
+                elif event.key in [K_DOWN, K_s]: moveDown = False
+            elif event.type == MOUSEMOTION:
+                playerRect.center = event.pos
 
-# Main game function
-def run_game(playerName, selectedLevel):
-    score = 0
-    baddies = []
-    explosions = []
-    projectiles = []
-
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 70)
-
-    # Set baddie speed based on difficulty
-    if selectedLevel == 'easy':
-        baddieSpeed = 4
-    elif selectedLevel == 'medium':
-        baddieSpeed = 6
-    else:
-        baddieSpeed = 8
-
-    # Game loop
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                terminate()
-
-        keys = pygame.key.get_pressed()
-        if keys[K_LEFT] and playerRect.left > 0:
-            playerRect.move_ip(-PLAYERMOVERATE, 0)
-        if keys[K_RIGHT] and playerRect.right < WINDOWWIDTH:
+        if moveLeft and playerRect.left > 0:
+            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+        if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
+        if moveUp and playerRect.top > 0:
+            playerRect.move_ip(0, -1 * PLAYERMOVERATE)
+        if moveDown and playerRect.bottom < WINDOWHEIGHT:
+            playerRect.move_ip(0, PLAYERMOVERATE)
 
-        # Add new baddies
-        if random.randint(0, ADDNEWBADDIERATE) == 0:
+        baddieAddCounter += 1
+        if baddieAddCounter >= ADDNEWBADDIERATE:
+            baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            baddieRect = baddieImage.get_rect()
-            baddieRect.topleft = (random.randint(0, WINDOWWIDTH - baddieSize), 0 - baddieSize)
-            baddies.append({'rect': baddieRect, 'size': baddieSize})
+            newBaddie = {
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED)
+            }
+            baddies.append(newBaddie)
 
-        # Move baddies down
-        for b in baddies:
-            b['rect'].move_ip(0, baddieSpeed)
-            if b['rect'].top > WINDOWHEIGHT:
+        for b in baddies[:]:
+            b['rect'].move_ip(-b['speed'], 0)
+            if b['rect'].left < 0:
                 baddies.remove(b)
-                score += 1
 
-        # Check for collisions
+        for projectile in projectiles[:]:
+            projectile['rect'].move_ip(5, 0)
+            if projectile['rect'].left > WINDOWWIDTH:
+                projectiles.remove(projectile)
+
+        # Check for projectile collisions with baddies
+        for b in baddies[:]:
+            for projectile in projectiles[:]:
+                if b['rect'].colliderect(projectile['rect']):
+                    # Create an explosion at the baddie's position
+                    explosions.append(Explosion(b['rect'].centerx, b['rect'].centery))
+                    baddies.remove(b)
+                    projectiles.remove(projectile)
+                    break
+
+        # Update and draw explosions
+        for explosion in explosions[:]:
+            if explosion.update():
+                explosions.remove(explosion)
+
         if playerHasHitBaddie(playerRect, baddies):
-            explosion = Explosion(playerRect.centerx, playerRect.centery)
-            explosions.append(explosion)
-            break  # End the game loop on collision
+            if playerName in scores:
+                scores[playerName] = max(scores[playerName], score)
+            else:
+                scores[playerName] = score
+            save_scores(scores)
+            return
 
-        # Update explosions
-        explosions = [exp for exp in explosions if not exp.update()]
-
-        # Drawing
+        windowSurface.fill((255, 255, 255))
         windowSurface.blit(waterImage, (backgroundX, 0))
-        windowSurface.blit(playerImage, playerRect)
+
         for b in baddies:
-            windowSurface.blit(baddieImage, b['rect'])
+            windowSurface.blit(b['surface'], b['rect'])
 
-        # Draw explosions
-        for exp in explosions:
-            windowSurface.blit(exp.image, exp.rect)
+        for projectile in projectiles:
+            windowSurface.blit(projectile['surface'], projectile['rect'])
 
+        for explosion in explosions:
+            windowSurface.blit(explosion.image, explosion.rect)
+
+        windowSurface.blit(playerImage, playerRect)
         drawText(f'Score: {score}', smallFont, windowSurface, 10, 10)
-        
+
         pygame.display.update()
         mainClock.tick(FPS)
 
-    # After game over, handle score saving
-    if playerName in scores:
-        scores[playerName] = max(scores[playerName], score)
-    else:
-        scores[playerName] = score
-    save_scores(scores)
-
-# Main game loop
-def main():
-    while True:
-        playerName, selectedLevel = show_main_menu()
-        run_game(playerName, selectedLevel)
-        show_game_over_menu(score)
-
-if __name__ == '__main__':
-    main()
+# Main application loop
+while True:
+    playerName, selectedLevel = show_main_menu()
+    game_loop(playerName, selectedLevel)
+    play_intro_video(r"C:\Users\Prêt à démarrer\OneDrive\Documents\GitHub\SD2024\intro.mp4")  # Play the video here   
+   
