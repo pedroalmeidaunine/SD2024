@@ -100,7 +100,7 @@ backgroundSpeed = 2
 
 # Function to play the intro video
 def play_intro_video(video_path):
-    clip = "intro.mp4"
+    clip = VideoFileClip(video_path)
     clip = clip.resize((WINDOWWIDTH, WINDOWHEIGHT))  # Adjust video size to fit the Pygame window
     
     for frame in clip.iter_frames(fps=FPS, dtype="uint8"):
@@ -132,6 +132,54 @@ class Explosion:
             self.image = self.images[self.index]
         return self.index >= len(self.images) - 1  # Return True if animation is done
 
+# Function to show the loss menu after the player dies
+def show_loss_menu(playerName, score):
+    while True:
+        windowSurface.fill((255, 255, 255))
+        drawText('Game Over', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
+        drawText(f'Your Score: {score}', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
+
+        # Draw buttons with custom colors
+        backToMenu_button_color = (0, 0, 255)  # Blue
+        playAgain_button_color = (0, 255, 0)  # Green
+        quit_button_color = (255, 0, 0)  # Red
+
+        # Draw the buttons
+        draw_button(windowSurface, 'Back to Menu', (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2), 150, 40, backToMenu_button_color)
+        draw_button(windowSurface, 'Play Again', (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 60, 150, 40, playAgain_button_color)
+        draw_button(windowSurface, 'Quit', (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 120, 150, 40, quit_button_color)
+
+        # Display high scores on the right side
+        drawText('High Scores:', font, windowSurface, (WINDOWWIDTH * 2 / 3), (WINDOWHEIGHT / 6))
+        
+        # Sort the scores and display the top 5 (or all if less)
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        for idx, (name, sc) in enumerate(sorted_scores):
+            drawText(f'{idx + 1}. {name}: {sc}', smallFont, windowSurface, (WINDOWWIDTH * 2 / 3), (WINDOWHEIGHT / 6) + 40 + (30 * idx))
+
+
+        pygame.display.update()
+
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            elif event.type == MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+
+                # Check if "Back to Menu" is clicked
+                if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 150) and (WINDOWHEIGHT / 2 < mouse_y < WINDOWHEIGHT / 2 + 40):
+                    return 'menu'
+
+                # Check if "Play Again" is clicked
+                if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 150) and (WINDOWHEIGHT / 2 + 60 < mouse_y < WINDOWHEIGHT / 2 + 100):
+                    return 'play_again'
+
+                # Check if "Quit" is clicked
+                if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 150) and (WINDOWHEIGHT / 2 + 120 < mouse_y < WINDOWHEIGHT / 2 + 160):
+                    terminate()
+
 # Main menu function
 def show_main_menu():
     playerName = ""
@@ -162,6 +210,15 @@ def show_main_menu():
         quit_button_x = WINDOWWIDTH - 120
         quit_button_y = WINDOWHEIGHT - 60
         draw_button(windowSurface, 'QUIT', quit_button_x, quit_button_y, 100, 40, (255, 0, 0))
+
+        # Display high scores on the right side
+        drawText('High Scores:', font, windowSurface, (WINDOWWIDTH * 2 / 3), (WINDOWHEIGHT / 6))
+        
+        # Sort the scores and display the top 5 (or all if less)
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        for idx, (name, sc) in enumerate(sorted_scores):
+            drawText(f'{idx + 1}. {name}: {sc}', smallFont, windowSurface, (WINDOWWIDTH * 2 / 3), (WINDOWHEIGHT / 6) + 40 + (30 * idx))
 
         pygame.display.update()
         
@@ -295,13 +352,19 @@ def game_loop(playerName, selectedLevel):
             if explosion.update():
                 explosions.remove(explosion)
 
+        #Player Hits Baddie  
         if playerHasHitBaddie(playerRect, baddies):
             if playerName in scores:
                 scores[playerName] = max(scores[playerName], score)
             else:
                 scores[playerName] = score
             save_scores(scores)
-            return
+            menu_choice = show_loss_menu(playerName, score)
+
+            if menu_choice == 'menu':
+                return  # Go back to the main menu
+            elif menu_choice == 'play_again':
+                game_loop(playerName, selectedLevel)  # Restart the game loop
 
         windowSurface.fill((255, 255, 255))
         windowSurface.blit(waterImage, (backgroundX, 0))
@@ -324,6 +387,9 @@ def game_loop(playerName, selectedLevel):
 # Main application loop
 while True:
     playerName, selectedLevel = show_main_menu()
-    play_intro_video(r"C:\Users\Prêt à démarrer\OneDrive\Documents\GitHub\SD2024\intro.mp4")  # Play the video here   
     game_loop(playerName, selectedLevel)
+    play_intro_video("intro.mp4")  # Play the video after pressing "START"
+    
+
+    
 
