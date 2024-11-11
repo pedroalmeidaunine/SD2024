@@ -1,1 +1,1 @@
-{"matteo": 489, "Pedro": 2415, "PEDRO": 192}
+{"matteo": 489, "Pedro": 2415, "PEDRO": 192, "Pedor": 362, "h": 55, "pw": 149, "p": 92}

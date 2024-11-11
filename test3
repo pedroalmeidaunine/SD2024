@@ -135,7 +135,7 @@ class Explosion:
 # Function to show the loss menu after the player dies
 def show_loss_menu(playerName, score):
     # Load the background image
-    background_image = pygame.image.load('background.png').convert()
+    background_image = pygame.image.load('fuck.png').convert()
     background_image = pygame.transform.scale(background_image, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize to fit the window
 
     while True:
@@ -174,7 +174,7 @@ def show_loss_menu(playerName, score):
 
                 # Check if "Back to Menu" is clicked
                 if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 150) and (WINDOWHEIGHT / 2 < mouse_y < WINDOWHEIGHT / 2 + 40):
-                    return 'menu'
+                    return show_main_menu
 
                 # Check if "Play Again" is clicked
                 if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 150) and (WINDOWHEIGHT / 2 + 60 < mouse_y < WINDOWHEIGHT / 2 + 100):
@@ -367,12 +367,15 @@ def game_loop(playerName, selectedLevel):
             else:
                 scores[playerName] = score
             save_scores(scores)
+           
+            # Show loss menu and return to the main menu if player selects 'menu'
             menu_choice = show_loss_menu(playerName, score)
-
             if menu_choice == 'menu':
-                return  # Go back to the main menu
+                show_main_menu()  # Return to main menu
+                return  # Exit the game loop
             elif menu_choice == 'play_again':
-                game_loop(playerName, selectedLevel)  # Restart the game loop
+                game_loop(playerName, selectedLevel) 
+                            
 
         windowSurface.fill((255, 255, 255))
         windowSurface.blit(waterImage, (backgroundX, 0))
