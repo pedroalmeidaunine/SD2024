@@ -9,7 +9,7 @@ from moviepy.editor import VideoFileClip
 pygame.init()
 infoObject = pygame.display.Info()
 WINDOWWIDTH = infoObject.current_w
-WINDOWHEIGHT = 600
+WINDOWHEIGHT = infoObject.current_h
 
 TEXTCOLOR = (0, 0, 0)
 FPS = 60
@@ -100,7 +100,7 @@ backgroundSpeed = 2
 
 # Function to play the intro video
 def play_intro_video(video_path):
-    clip = VideoFileClip(video_path)
+    clip = "intro.mp4"
     clip = clip.resize((WINDOWWIDTH, WINDOWHEIGHT))  # Adjust video size to fit the Pygame window
     
     for frame in clip.iter_frames(fps=FPS, dtype="uint8"):
@@ -142,21 +142,26 @@ def show_main_menu():
         drawText('Enter your name: ' + playerName, smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
         drawText('Select Difficulty:', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
 
+        # Set colors based on selected difficulty level
         easy_color = (255, 0, 0) if selectedLevel == 'easy' else (0, 0, 0)
         medium_color = (255, 0, 0) if selectedLevel == 'medium' else (0, 0, 0)
         hard_color = (255, 0, 0) if selectedLevel == 'hard' else (0, 0, 0)
 
+        # Display difficulty options
         drawText('1. Easy', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 40, easy_color)
         drawText('2. Medium', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 80, medium_color)
         drawText('3. Hard', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2) + 120, hard_color)
 
+        # Display Start button with appropriate color
         start_button_color = (0, 255, 0) if playerName and selectedLevel else (150, 150, 150)
-        draw_button(windowSurface, 'Start', (WINDOWWIDTH / 2 - 50), (WINDOWHEIGHT / 2) + 160, 100, 40, start_button_color)
+        start_button_x = WINDOWWIDTH / 2 - 50
+        start_button_y = (WINDOWHEIGHT / 2) + 160
+        draw_button(windowSurface, 'Start', start_button_x, start_button_y, 100, 40, start_button_color)
 
-        drawText('High Scores:', smallFont, windowSurface, (WINDOWWIDTH / 4 * 3), 50)
-        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
-        for index, (name, score) in enumerate(sorted_scores):
-            drawText(f'{index + 1}. {name}: {score}', smallFont, windowSurface, (WINDOWWIDTH / 4 * 3), 100 + index * 30)
+        # Display QUIT button at bottom right
+        quit_button_x = WINDOWWIDTH - 120
+        quit_button_y = WINDOWHEIGHT - 60
+        draw_button(windowSurface, 'QUIT', quit_button_x, quit_button_y, 100, 40, (255, 0, 0))
 
         pygame.display.update()
         
@@ -179,23 +184,39 @@ def show_main_menu():
                 elif event.key == K_3:
                     selectedLevel = 'hard'
             elif event.type == MOUSEBUTTONDOWN:
-                if event.button == 1 and playerName and selectedLevel:
+                if event.button == 1:  # Left mouse button
                     mouse_x, mouse_y = event.pos
-                    if (WINDOWWIDTH / 2 - 50 < mouse_x < WINDOWWIDTH / 2 + 50) and (WINDOWHEIGHT / 2 + 160 < mouse_y < WINDOWHEIGHT / 2 + 200):
+                    
+                    # Check if Start button clicked
+                    if (start_button_x < mouse_x < start_button_x + 100) and (start_button_y < mouse_y < start_button_y + 40) and playerName and selectedLevel:
                         return playerName, selectedLevel
+                    
+                    # Check if QUIT button clicked
+                    elif (quit_button_x < mouse_x < quit_button_x + 100) and (quit_button_y < mouse_y < quit_button_y + 40):
+                        terminate()
+                    
+                    # Check if difficulty buttons clicked
+                    if (WINDOWWIDTH / 3 < mouse_x < WINDOWWIDTH / 3 + 100):
+                        if (WINDOWHEIGHT / 2 + 40 < mouse_y < WINDOWHEIGHT / 2 + 80):
+                            selectedLevel = 'easy'
+                        elif (WINDOWHEIGHT / 2 + 80 < mouse_y < WINDOWHEIGHT / 2 + 120):
+                            selectedLevel = 'medium'
+                        elif (WINDOWHEIGHT / 2 + 120 < mouse_y < WINDOWHEIGHT / 2 + 160):
+                            selectedLevel = 'hard'
+
 
 # Game loop
 def game_loop(playerName, selectedLevel):
     global ADDNEWBADDIERATE, BADDIEMAXSPEED
     if selectedLevel == 'easy':
-        ADDNEWBADDIERATE = 8
-        BADDIEMAXSPEED = 5
-    elif selectedLevel == 'medium':
         ADDNEWBADDIERATE = 6
-        BADDIEMAXSPEED = 7
-    else:
-        ADDNEWBADDIERATE = 4
+        BADDIEMAXSPEED = 6
+    elif selectedLevel == 'medium':
+        ADDNEWBADDIERATE = 8
         BADDIEMAXSPEED = 9
+    else:
+        ADDNEWBADDIERATE = 9
+        BADDIEMAXSPEED = 13
 
     baddies = []
     projectiles = []
