@@ -134,8 +134,12 @@ class Explosion:
 
 # Function to show the loss menu after the player dies
 def show_loss_menu(playerName, score):
+    # Load the background image
+    background_image = pygame.image.load('background.png').convert()
+    background_image = pygame.transform.scale(background_image, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize to fit the window
+
     while True:
-        windowSurface.fill((255, 255, 255))
+        windowSurface.blit(background_image, (0, 0))  # Draw the background image
         drawText('Game Over', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
         drawText(f'Your Score: {score}', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
 
@@ -184,8 +188,12 @@ def show_loss_menu(playerName, score):
 def show_main_menu():
     playerName = ""
     selectedLevel = None
+    # Load the background image
+    background_image = pygame.image.load('fse_breguet.jpg').convert()
+    background_image = pygame.transform.scale(background_image, (WINDOWWIDTH, WINDOWHEIGHT))  # Resize to fit the window
+
     while True:
-        windowSurface.fill((255, 255, 255))
+        windowSurface.blit(background_image, (0, 0))  # Draw the background image
         drawText('Dodger Game', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 6))
         drawText('Enter your name: ' + playerName, smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
         drawText('Select Difficulty:', smallFont, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 2))
@@ -282,7 +290,7 @@ def game_loop(playerName, selectedLevel):
     playerRect.topleft = (50, WINDOWHEIGHT / 2)
     moveLeft = moveRight = moveUp = moveDown = False
     baddieAddCounter = 0
-
+    
     while True:
         score += 1
 
