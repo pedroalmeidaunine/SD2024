@@ -12,7 +12,6 @@ WINDOWWIDTH = infoObject.current_w
 WINDOWHEIGHT = infoObject.current_h
 
 TEXTCOLOR = (0, 0, 0)
-FPS = 60
 PLAYERMOVERATE = 5
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
@@ -292,8 +291,9 @@ def game_loop(playerName, selectedLevel):
     baddieAddCounter = 0
     
     while True:
-        score += 1
-
+        
+        score +=1
+        
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
