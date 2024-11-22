@@ -114,7 +114,7 @@ class Diver:
         self.image = pygame.transform.scale(self.image, (90,50))
         self.rect = self.image.get_rect()
         self.rect.topleft = (50, window_height // 2)  # Start position
-        self.move_rate = 1  # Default movement rate
+        self.move_rate = 10  # Default movement rate
     
     def move(self, move_left, move_right, move_up, move_down):
         """
