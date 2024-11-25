@@ -104,27 +104,15 @@ class Explosion:
         return self.index >= len(self.images) - 1  # Return True if animation is done
     
 
-class Diver:
-    def __init__(self, image_path):
-        """
-        Initialize the Diver object.
-        :param image_path: Path to the player's image.
-        """
+class Diver:                        
+    def __init__(self, image_path):                    #Initialize the Diver object. (param image_path: Path to the player's image.)
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (90,50))
         self.rect = self.image.get_rect()
         self.rect.topleft = (50, window_height // 2)  # Start position
         self.move_rate = 10                           # Default movement rate
     
-    def move(self, move_left, move_right, move_up, move_down):
-        """
-        Move the player based on input flags.
-
-        :param move_left: Boolean indicating left movement.
-        :param move_right: Boolean indicating right movement.
-        :param move_up: Boolean indicating upward movement.
-        :param move_down: Boolean indicating downward movement.
-        """
+    def move(self, move_left, move_right, move_up, move_down):   #Move the player based on input flags. #this function was inspired by https://www.geeksforgeeks.org/pygame-control-sprites/
         if move_left and self.rect.left > 0:
             self.rect.move_ip(-self.move_rate, 0)
         if move_right and self.rect.right < window_width:
@@ -398,7 +386,7 @@ def game_loop(playerName, selectedLevel):
     oxygen_spawn_counter = 0   # To control oxygen item spawns
     oxygen_level = oxygen_max  # Start fully charged
     last_update_time = pygame.time.get_ticks()
-    player = Diver("diver.png")  #the image comes from https://creazilla.com/media/clipart/1795612/scuba-diver
+    player = Diver("diver.png")  #this image comes from https://creazilla.com/media/clipart/1795612/scuba-diver
     
     while True:
         for event in pygame.event.get():
