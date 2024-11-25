@@ -207,7 +207,7 @@ class OxygenItem:                                                 #Initialize an
         self.speed = 3
         self.isTrash = isTrash
         self.surface = pygame.transform.scale(image, (50,50))
-        self.spawn_time = time.time()  # Time when the item was created
+        self.spawn_time = time.time()                             # Time when the item was created
 
     def move(self):                                               #Move the projectile to the right.
         self.rect.y -= self.speed
