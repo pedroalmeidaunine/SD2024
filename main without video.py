@@ -9,13 +9,13 @@ import time
 # Initialize Pygame and window settings
 pygame.init()
 pygame.mixer.init()
-info_object = pygame.display.Info()
-window_width = info_object.current_w
-window_height = info_object.current_h
+info_object = pygame.display.Info() #this function gets the information about the screen dimensions from the user
+window_width = info_object.current_w #this function gets width of the user screen and the game window takes the same width
+window_height = info_object.current_h #this function gets height of the user screen and the game window takes the same height
 
 # Initialize Oxygen level
 oxygen_max = 20  # Maximum oxygen level
-increase_in_oxygen = 5
+increase_in_oxygen = 5 
 oxygen_decrease_rate = 3  # Adjust this rate to make oxygen last longer or shorter
 
 text_color = (255,255,255)
@@ -26,7 +26,7 @@ baddie_min_speed = 1
 baddie_max_speed = 8
 add_new_baddie_rate = 6
 
-# Load and save high scores
+# Load and save high scores                                      #we saw the function in this website and adapted https://stackoverflow.com/questions/16726354/saving-the-highscore-for-a-game
 def load_scores():
     try:
         with open('scores.txt', 'r') as f:
@@ -45,47 +45,47 @@ def terminate():
     sys.exit()
 
 # Draw text and buttons
-def draw_text(text, font, surface, x, y, color=text_color):
-    textobj = font.render(text, 1, color)
+def draw_text(text, font, surface, x, y, color=text_color):  #this function comes from https://www.geeksforgeeks.org/python-display-text-to-pygame-window/
+    textobj = font.render(text, 1, color)                    #we edited the function to our use
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-def draw_button(surface, text, x, y, width, height, color):
-    pygame.draw.rect(surface, color, (x, y, width, height))
+def draw_button(surface, text, x, y, width, height, color):    #this function comes from https://medium.com/@01one/how-to-create-clickable-button-in-pygame-8dd608d17f1b
+    pygame.draw.rect(surface, color, (x, y, width, height))    #we edited the function to our use
     draw_text(text, smallFont, surface, x + 10, y + 10,(0,0,0))
 
 # Load resources
 main_clock = pygame.time.Clock()
-window_surface = pygame.display.set_mode((window_width, window_height))
-pygame.display.set_caption('Dodger Game')
+window_surface = pygame.display.set_mode((window_width, window_height))  #this function comes from https://www.geeksforgeeks.org/how-to-make-a-pygame-window/
+pygame.display.set_caption('Dodger Game')                                #this function comes from https://www.geeksforgeeks.org/how-to-make-a-pygame-window/
 pygame.mouse.set_visible(True)
 
 font = pygame.font.SysFont(None, 48)
 smallFont = pygame.font.SysFont(None, 36)
 
 
-baddie_image = pygame.image.load('shark.png')  # https://creazilla.com/media/clipart/26116/shark
-fish_image = pygame.image.load("fish.png") #https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Ffish-clipart&psig=AOvVaw0CIFismgnzHrTir36AEXqa&ust=1732210925248000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCOjIidm664kDFQAAAAAdAAAAABAJ
-oxygen_image = pygame.image.load("oxygen.png")  # https://favpng.com/png_view/dense-fog-the-discovery-of-oxygen-oxygen-therapy-clip-art-png/9DamM6uQ
-trash_image = pygame.image.load("trash.png")  # https://www.freepik.com/premium-vector/hand-drawn-garbage-cartoon-vector-illustration-clipart-white-background_151613278.htm
-bullet_image= pygame.image.load("bullet.png") #https://creazilla.com/media/clipart/7931732/flying-bullet
+baddie_image = pygame.image.load('shark.png')   #This image comes from https://creazilla.com/media/clipart/26116/shark
+fish_image = pygame.image.load("fish.png")      #This image comes from https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Ffish-clipart&psig=AOvVaw0CIFismgnzHrTir36AEXqa&ust=1732210925248000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCOjIidm664kDFQAAAAAdAAAAABAJ
+oxygen_image = pygame.image.load("oxygen.png")  #This image comes from https://favpng.com/png_view/dense-fog-the-discovery-of-oxygen-oxygen-therapy-clip-art-png/9DamM6uQ
+trash_image = pygame.image.load("trash.png")    #This image comes from https://www.freepik.com/premium-vector/hand-drawn-garbage-cartoon-vector-illustration-clipart-white-background_151613278.htm
+bullet_image= pygame.image.load("bullet.png")   #This image comes from https://creazilla.com/media/clipart/7931732/flying-bullet
 waterImage = pygame.image.load('water.png').convert()
 waterRect = waterImage.get_rect()
 
 # Explosion images
-explosion_images = [pygame.image.load(f"exp{i}.png").convert_alpha() for i in range(1, 6)]
-explosion_images = [pygame.transform.scale(img, (100, 100)) for img in explosion_images]
+explosion_images = [pygame.image.load(f"exp{i}.png").convert_alpha() for i in range(1, 6)]  #We used this video tutorial as example to our explosions, the exp1-5 come from this video https://www.youtube.com/watch?v=d06aVDzOfV8
+explosion_images = [pygame.transform.scale(img, (100, 100)) for img in explosion_images]    #This code also comes from the video tutorial below
 
 def play_intro_video(video_path):
     clip = VideoFileClip(video_path)
-    clip = clip.resize((window_width, window_height))  # type: ignore # Resize to fit the window
+    clip = clip.resize((window_width, window_height))  
 
     clip.preview()  # Plays video with sound
     clip.close()
 
 
-# Explosion class
+# Explosion class                                                                           #We used this video tutorial as example to our explosions https://www.youtube.com/watch?v=d06aVDzOfV8
 class Explosion:
     def __init__(self, x, y):
         self.images = explosion_images
@@ -114,7 +114,7 @@ class Diver:
         self.image = pygame.transform.scale(self.image, (90,50))
         self.rect = self.image.get_rect()
         self.rect.topleft = (50, window_height // 2)  # Start position
-        self.move_rate = 10  # Default movement rate
+        self.move_rate = 10                           # Default movement rate
     
     def move(self, move_left, move_right, move_up, move_down):
         """
@@ -134,27 +134,15 @@ class Diver:
         if move_down and self.rect.bottom < window_height:
             self.rect.move_ip(0, self.move_rate)
     
-    def has_hit_baddie(self, baddies):
-        """
-        Check if the player has collided with any baddie.
-
-        :param baddies: List of baddie objects.
-        :return: True if a collision occurred, False otherwise.
-        """
+    def has_hit_baddie(self, baddies):               #Checks if the player has collied with any baddie
         for baddie in baddies:
             if self.rect.colliderect(baddie.rect):
-                return True
+                return True                          #returns True if a collision occurred, False otherwise
         return False
 
 
 class Fish:
-    def __init__(self, image, is_friendly):
-        """
-        Initialize a Fish object.
-
-        :param image: Pygame image for the fish.
-        :param is_friendly: Boolean indicating if the fish is friendly.
-        """
+    def __init__(self, image, is_friendly):          # initialize a Fish object - param image: inserts a Pygame image for the fish, param is_friendly: Boolean indicating if the fish is friendly
         self.image = image
         self.is_friendly = is_friendly
         self.size = random.randint(baddie_min_size, baddie_max_size)
@@ -167,89 +155,50 @@ class Fish:
         )
         self.surface = pygame.transform.scale(image, (self.size, self.size))
     
-    def move(self):
-        """
-        Move the fish to the left based on its speed.
-        """
+    def move(self):                                 # moves the fish to the left based on its speed
         self.rect.x -= self.speed
 
-    def is_off_screen(self):
-        """
-        Check if the fish has moved off-screen to the left.
-        """
+    def is_off_screen(self):                        #Checks if the fish has moved off-screen to the left.
         return self.rect.right < 0
 
-    def check_collision(self, projectiles):
-        """
-        Check for collisions with projectiles.
-
-        :param projectiles: List of projectiles (each containing a rect).
-        :return: The projectile it collides with, or None.
-        """
-        for projectile in projectiles:
+    def check_collision(self, projectiles):         #Checks for collisions with projectiles. - param projectiles: List of projectiles (each containing a rect)     
+        for projectile in projectiles:              #returns the projectile it collides with, or None.
             if self.rect.colliderect(projectile.rect):
                 return projectile
         return None
 
-    def handle_collision(self, projectile, explosions, score):
+    def handle_collision(self, projectile, explosions, score):    # Handle what happens when this fish collides with a projectile.
         pygame.mixer.music.load("blast.wav")
 
         # Play the MP3 file
         pygame.mixer.music.play()
-        """
-        Handle what happens when this fish collides with a projectile.
-
-        :param projectile: The projectile that hit the fish.
-        :param explosions: List to append explosions.
-        :param score: Current game score (passed by reference).
-        :return: Updated score.
-        """
-        # Friendly fish reduces score; hostile fish increases it
+                   
+        # Friendly fish reduces score by 20; hostile fish increases score by 10
         if self.is_friendly:
             score-=20
         else:
             score+=10
         # Create an explosion at the collision point
         explosions.append(Explosion(self.rect.centerx, self.rect.centery))
-        return score
+        return score                                              #returns the Updated score.
 
 
-class Projectile:
-    def __init__(self, x, y):
-        """
-        Initialize a Projectile object.
-
-        :param x: Starting x-coordinate of the projectile.
-        :param y: Starting y-coordinate of the projectile.
-        """
+class Projectile:                                                 #Initialize a Projectile object.
+    def __init__(self, x, y):                                     #param x: Starting x-coordinate of the projectile and param y: Starting y-coordinate of the projectile.
         self.rect = pygame.Rect(x, y, 15, 20)
         self.surface = pygame.transform.scale(bullet_image, (30,20))
         self.speed = 8
 
-    def move(self):
-        """
-        Move the projectile to the right.
-        """
+    def move(self):                                               #Move the projectile to the right.
         self.rect.x += self.speed
 
-    def is_off_screen(self, window_width):
-        """
-        Check if the projectile has moved off-screen.
-
-        :param window_width: Width of the game window.
-        :return: True if off-screen, False otherwise.
-        """
-        return self.rect.left > window_width
+    def is_off_screen(self, window_width):                        #Check if the projectile has moved off-screen.
+        return self.rect.left > window_width                      #returns True if off-screen, False otherwise.
 
 
 
-class OxygenItem:
-    def __init__(self, image,isTrash=False):
-        """
-        Initialize an OxygenItem object.
-        
-        :param image: The image to be used for the oxygen item.
-        """
+class OxygenItem:                                                 #Initialize an OxygenItem object.
+    def __init__(self, image,isTrash=False):                      #param image: The image to be used for the oxygen item.
         self.rect = pygame.Rect(
             random.randint(80, window_width - 20),
             window_height - 40,
@@ -260,47 +209,19 @@ class OxygenItem:
         self.surface = pygame.transform.scale(image, (50,50))
         self.spawn_time = time.time()  # Time when the item was created
 
-    def move(self):
-        """
-        Move the projectile to the right.
-        """
+    def move(self):                                               #Move the projectile to the right.
         self.rect.y -= self.speed
 
-    def is_off_screen(self):
-        """
-        Check if the projectile has moved off-screen.
+    def is_off_screen(self):                                      #Check if the projectile has moved off-screen.
+        return self.rect.top < 10                                 #returns True if off-screen, False otherwise.
 
-        :param 
-        :return: True if off-screen, False otherwise.
-        """
-        return self.rect.top < 10
+    def has_expired(self, current_time, expiration_rate):         #Checks if the oxygen item has expired based on the spawn time and expiration rate. (param current_time: The current time.) (param expiration_rate: How long the item lasts before disappearing.)
+        return current_time - self.spawn_time > expiration_rate   #returns True if expired, False otherwise.
+
+    def check_collision(self, player_rect):                       #Checks if the oxygen item collides with the player. (param player_rect: The player's rectangle to check for collision.)
+        return self.rect.colliderect(player_rect)                 #returns True if collision detected, False otherwise.
     
-    def has_expired(self, current_time, expiration_rate):
-        """
-        Check if the oxygen item has expired based on the spawn time and expiration rate.
-        
-        :param current_time: The current time.
-        :param expiration_rate: How long the item lasts before disappearing.
-        :return: True if expired, False otherwise.
-        """
-        return current_time - self.spawn_time > expiration_rate
-
-    def check_collision(self, player_rect):
-        """
-        Check if the oxygen item collides with the player.
-
-        :param player_rect: The player's rectangle to check for collision.
-        :return: True if collision detected, False otherwise.
-        """
-        return self.rect.colliderect(player_rect)
-    
-    def handle_collision(self, player):
-        """
-        Handle the collision with the player. This depends on the item type.
-        
-        :param player: The player object.
-        :return: The score or oxygen change based on item type.
-        """
+    def handle_collision(self, player):                           #Handles the collision with the player. This depends on the item type.
         if self.isTrash:
             return 1  # Increase score by 10 for trash items
         else:
