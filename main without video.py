@@ -223,15 +223,15 @@ class OxygenItem:                                                 #Initialize an
     
     def handle_collision(self, player):                           #Handles the collision with the player. This depends on the item type.
         if self.isTrash:
-            return 1  # Increase score by 10 for trash items
+            return 1                                              # Increase score by 10 for trash items
         else:
-            return 'oxygen'  # Return a flag indicating it's an oxygen item
+            return 'oxygen'                                       # Return a flag indicating it's an oxygen item
 
 
 
-# Function to show the loss menu after the player dies
+# Function to shows the loss menu after the player dies
 def show_loss_menu(playerName, score):
-    # Load the background image
+    # Loads the background image
     background_image = pygame.image.load('background.png').convert()
     background_image = pygame.transform.scale(background_image, (window_width, window_height))  # Resize to fit the window
 
@@ -287,7 +287,7 @@ def show_main_menu():
     playerName = ""
     selectedLevel = None
     # Load the background image
-    background_image = pygame.image.load('bg2.jpg').convert()  #https://images.pexels.com/photos/932638/pexels-photo-932638.jpeg?cs=srgb&dl=pexels-blaque-x-264516-932638.jpg&fm=jpg
+    background_image = pygame.image.load('bg2.jpg').convert()                                   #this image comes from https://images.pexels.com/photos/932638/pexels-photo-932638.jpeg?cs=srgb&dl=pexels-blaque-x-264516-932638.jpg&fm=jpg
     background_image = pygame.transform.scale(background_image, (window_width, window_height))  # Resize to fit the window
 
     while True:
@@ -389,16 +389,16 @@ def game_loop(playerName, selectedLevel):
     baddies = []
     fishes = []
     projectiles = []
-    explosions = []  # Store explosions
+    explosions = []    # Store explosions
     oxygen_items = []  # List to hold oxygen bubbles/items
     trash_items = []
     score = 0
     moveLeft = moveRight = moveUp = moveDown = False
     baddieAddCounter = 0
-    oxygen_spawn_counter = 0  # To control oxygen item spawns
+    oxygen_spawn_counter = 0   # To control oxygen item spawns
     oxygen_level = oxygen_max  # Start fully charged
     last_update_time = pygame.time.get_ticks()
-    player = Diver("diver.png")  # https://creazilla.com/media/clipart/1795612/scuba-diver
+    player = Diver("diver.png")  #the image comes from https://creazilla.com/media/clipart/1795612/scuba-diver
     
     while True:
         for event in pygame.event.get():
@@ -484,7 +484,7 @@ def game_loop(playerName, selectedLevel):
                 pygame.mixer.music.load("pickup.wav")
                 pygame.mixer.music.play()
                 oxygen_level += increase_in_oxygen  # Increase item level
-                oxygen_items.remove(item)  # Remove the collected oxygen item
+                oxygen_items.remove(item)           # Remove the collected oxygen item
                 oxygen_spawn_counter -= 1
                 
             if item.has_expired(current_time, oxygen_decrease_rate):
