@@ -1,1 +1,1 @@
-{"Matteo": 489, "Pedro": 6931, "Stefan": 1340, "Demo": 290}
+{"Matteo": 4980, "Pedro": 6930, "Stefan": 1340, "Demo": 290, "Louise": 3870, "Joao": 2950, "Pedor": 70}

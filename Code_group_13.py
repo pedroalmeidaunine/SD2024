@@ -78,13 +78,6 @@ waterRect = waterImage.get_rect()
 explosion_images = [pygame.image.load(f"exp{i}.png").convert_alpha() for i in range(1, 6)]  #We used this video tutorial as example to our explosions, the exp1-5 come from this video https://www.youtube.com/watch?v=d06aVDzOfV8
 explosion_images = [pygame.transform.scale(img, (100, 100)) for img in explosion_images]    #This code also comes from the video tutorial below
 
-def play_intro_video(video_path):
-    clip = VideoFileClip(video_path)
-    clip = clip.resize((window_width, window_height))  
-
-    clip.preview()  # Plays video with sound
-    clip.close()
-
 
 # Explosion class                                                                           #We used this video tutorial as example to our explosions https://www.youtube.com/watch?v=d06aVDzOfV8
 class Explosion:
