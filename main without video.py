@@ -20,7 +20,8 @@ oxygen_decrease_rate = 3  # Adjust this rate to make oxygen last longer or short
 
 text_color = (255,255,255)
 fps = 60
-baddie_min_size = 20
+# The following code helps to parameter the baddies size and speed, as well as the add of new baddies velocity.
+baddie_min_size = 20   
 baddie_max_size = 40
 baddie_min_speed = 1
 baddie_max_speed = 8
@@ -70,7 +71,7 @@ fish_image = pygame.image.load("fish.png")      #This image comes from https://w
 oxygen_image = pygame.image.load("oxygen.png")  #This image comes from https://favpng.com/png_view/dense-fog-the-discovery-of-oxygen-oxygen-therapy-clip-art-png/9DamM6uQ
 trash_image = pygame.image.load("trash.png")    #This image comes from https://www.freepik.com/premium-vector/hand-drawn-garbage-cartoon-vector-illustration-clipart-white-background_151613278.htm
 bullet_image= pygame.image.load("bullet.png")   #This image comes from https://creazilla.com/media/clipart/7931732/flying-bullet
-waterImage = pygame.image.load('water.png').convert()
+waterImage = pygame.image.load('water.png').convert()     #This picture comes from ChatGPT
 waterRect = waterImage.get_rect()
 
 # Explosion images
@@ -217,7 +218,7 @@ class OxygenItem:                                                 #Initialize an
 
 
 
-# Function to shows the loss menu after the player dies
+# Function to show the loss menu after the player dies
 def show_loss_menu(playerName, score):
     # Loads the background image
     background_image = pygame.image.load('background.png').convert()
@@ -361,7 +362,7 @@ def game_loop(playerName, selectedLevel):
     global add_new_baddie_rate, baddie_max_speed,oxygen_decrease_rate
     baddie_speed = 5
     baddie_rate = 25
-
+# Level parameters
     if selectedLevel == 'easy':
         add_new_baddie_rate = baddie_rate
         baddie_max_speed = baddie_speed
