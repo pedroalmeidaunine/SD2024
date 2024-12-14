@@ -59,7 +59,7 @@ def draw_button(surface, text, x, y, width, height, color):    #this function co
 # Load resources
 main_clock = pygame.time.Clock()
 window_surface = pygame.display.set_mode((window_width, window_height))  #this function comes from https://www.geeksforgeeks.org/how-to-make-a-pygame-window/
-pygame.display.set_caption('Dodger Game')                                #this function comes from https://www.geeksforgeeks.org/how-to-make-a-pygame-window/
+pygame.display.set_caption('Aqua Avenger')                                #this function comes from https://www.geeksforgeeks.org/how-to-make-a-pygame-window/
 pygame.mouse.set_visible(True)
 
 font = pygame.font.SysFont(None, 48)
@@ -274,7 +274,7 @@ def show_main_menu():
 
     while True:
         window_surface.blit(background_image, (0, 0))  # Draw the background image
-        draw_text('Dodger Game', font, window_surface, (window_width / 3), (window_height / 6))
+        draw_text('Aqua Avenger', font, window_surface, (window_width / 3), (window_height / 6))
         draw_text('Enter your name: ' + playerName, smallFont, window_surface, (window_width / 3), (window_height / 3))
         draw_text('Select Difficulty:', smallFont, window_surface, (window_width / 3), (window_height / 2))
 
